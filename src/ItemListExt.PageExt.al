@@ -2,11 +2,11 @@
 // Remember that object names and IDs should be unique across all extensions.
 // AL snippets start with t*, like tpageext - give them a try and happy coding!
 
-pageextension 50500 "CustomerListExt" extends "Customer List"
+pageextension 50500 "ItemListExt" extends "Item List"
 {
     actions
     {
-        addlast("&Customer")
+        addlast(processing)
         {
             action(DownloadItemXml)
             {
@@ -21,6 +21,7 @@ pageextension 50500 "CustomerListExt" extends "Customer List"
                     XmlStream: InStream;
                     Filename: Text;
                 begin
+                    Item.SetAutoCalcFields(Inventory);
                     XMLBuffer.CreateRootElement('Items');
                     XMLBuffer.AddNamespace('bcic', 'https://bcdev.tech/bc/itemcategory');
                     XMLBuffer.AddNamespace('bci', 'https://bcdev.tech/bc/item');
@@ -30,13 +31,13 @@ pageextension 50500 "CustomerListExt" extends "Customer List"
                             XMLBuffer.AddAttribute(ItemCategory.FieldName(Code), ItemCategory.Code);
                             XMLBuffer.AddElement('bcic:Description', ItemCategory.Description);
                             Item.SetRange("Item Category Code", ItemCategory.Code);
-                            Item.SetAutoCalcFields(Inventory);
                             if Item.FindSet() then
                                 repeat
                                     XMLBuffer.AddGroupElement('bci:Item');
                                     XMLBuffer.AddAttribute('bci:No', Item."No.");
                                     XMLBuffer.AddElement('bci:Description', item.Description);
-                                    XMLBuffer.AddElement('bci:Inventory', format(Item.Inventory, 0, 9));
+                                    XMLBuffer.AddElement('bci:Inventory', Format(Item.Inventory, 0, 9));
+                                    XMLBuffer.AddElement('bci:Price', Format(Item."Unit Price", 0, 9));
                                     XMLBuffer.GetParent();
                                 until Item.Next() = 0;
                             XMLBuffer.GetParent();
